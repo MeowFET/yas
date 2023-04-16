@@ -18,13 +18,15 @@ jobs:
         lfs: true
     - name: Build
       run: cargo build -r
-    - name: Rename
+    - name: Pre-Upload
       run: |
-        echo ${{ hashFiles('target/release/yas.exe') }} > yas-${{ github.ref_name }}.sha256
-        Get-Content target/release/yas-${{ github.ref_name }}.sha256
+        "${{ hashFiles('target/release/yas.exe') }}" | Out-File yas-${{ github.ref_name }}.sha256 ASCII -NoNewline
+        Get-Content yas-${{ github.ref_name }}.sha256
         Rename-Item target/release/yas.exe yas-${{ github.ref_name }}.exe
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
         name: yas
-        path: target/release/yas-${{ github.ref_name }}.*
+        path: |
+          target/release/yas-${{ github.ref_name }}.exe
+          yas-${{ github.ref_name }}.sha256
