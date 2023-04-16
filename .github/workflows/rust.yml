@@ -9,18 +9,22 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  build-windows:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         lfs: true
     - name: Build
-      run: cargo build --release
-    - name: Release
-      uses: actions/upload-artifact@v2
+      run: cargo build -r
+    - name: Rename
+      run: |
+        echo ${{ hashFiles('target/release/yas.exe') }} > yas-${{ github.ref_name }}.sha256
+        Get-Content target/release/yas-${{ github.ref_name }}.sha256
+        Rename-Item target/release/yas.exe yas-${{ github.ref_name }}.exe
+    - name: Upload
+      uses: actions/upload-artifact@v3
       with:
         name: yas
-        path: target/release/yas.exe
+        path: target/release/yas-${{ github.ref_name }}.*
