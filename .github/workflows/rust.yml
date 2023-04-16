@@ -16,17 +16,27 @@ jobs:
     - uses: actions/checkout@v3
       with:
         lfs: true
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Build
       run: cargo build -r
     - name: Pre-Upload
       run: |
-        "${{ hashFiles('target/release/yas.exe') }}" | Out-File yas-${{ github.ref_name }}.sha256 ASCII -NoNewline
-        Get-Content yas-${{ github.ref_name }}.sha256
+        "${{ hashFiles('target/release/yas.exe') }}" | Out-File target/release/yas-${{ github.ref_name }}.sha256 ASCII -NoNewline
+        Get-Content target/release/yas-${{ github.ref_name }}.sha256
         Rename-Item target/release/yas.exe yas-${{ github.ref_name }}.exe
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
         name: yas
         path: |
-          target/release/yas-${{ github.ref_name }}.exe
-          yas-${{ github.ref_name }}.sha256
+          target/release/yas-${{ github.ref_name }}.*
+    - name: Clean Target
+      run: Remove-Item target/release/*yas*
