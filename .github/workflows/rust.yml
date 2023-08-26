@@ -23,5 +23,5 @@ jobs:
     - name: Release
       uses: actions/upload-artifact@v2
       with:
-        name: yas
-        path: target/release/yas.exe
+        name: yas_scanner
+        path: target/release/yas_scanner.exe
