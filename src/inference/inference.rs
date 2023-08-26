@@ -5,9 +5,9 @@ use tract_onnx::prelude::*;
 use tract_onnx::Onnx;
 use serde_json::{Result, Value};
 
-use crate::common::RawImage;
 use crate::common::utils;
 use image::EncodableLayout;
+use crate::inference::pre_process::GrayImageFloat;
 
 
 type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
@@ -26,8 +26,8 @@ impl CRNNModel {
         //     .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
         //     .into_optimized().unwrap()
         //     .into_runnable().unwrap();
-        let mut bytes = include_bytes!("../../models/model_acc100-epoch49.onnx");
-        // let mut bytes = include_bytes!("../../models/model_training.onnx");
+        // let mut bytes = include_bytes!("../../models/model_acc100-epoch16.onnx");
+        let mut bytes = include_bytes!("../../models/model_training.onnx");
 
         let model = tract_onnx::onnx()
             .model_for_read(&mut bytes.as_bytes()).unwrap()
@@ -58,10 +58,9 @@ impl CRNNModel {
         }
     }
 
-    pub fn inference_string(&self, img: &RawImage) -> String {
+    pub fn inference_string(&self, img: &GrayImageFloat) -> String {
         let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
-            let index = img.w * y as u32 + x as u32;
-            img.data[index as usize]
+            img.get_pixel(x as u32, y as u32)[0]
         }).into();
 
         let result = self.model.run(tvec!(tensor)).unwrap();
